@@ -1,0 +1,104 @@
+# DEPLOY
+- name: Deploy webservers on VM1 and VM2
+  hosts: web
+  become: yes
+  tags: [deploy]
+
+  vars:
+    site_root: /var/www/sjsu
+    site_name: sjsu
+
+  tasks:
+    - name: Ensure APT cache is up to date (Debian/Ubuntu)
+      apt:
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Install nginx
+      package:
+        name: nginx
+        state: present
+
+    - name: Ensure site root exists
+      file:
+        path: "{{ site_root }}"
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: "0755"
+
+    - name: Deploy index.html with correct SJSU-X message
+      template:
+        src: templates/index.html.j2
+        dest: "{{ site_root }}/index.html"
+        owner: www-data
+        group: www-data
+        mode: "0644"
+      notify: reload nginx
+
+    - name: Deploy nginx vhost for port {{ server_port }}
+      template:
+        src: templates/nginx.conf.j2
+        dest: "/etc/nginx/sites-available/{{ site_name }}"
+        mode: "0644"
+      notify: reload nginx
+
+    - name: Enable site
+      file:
+        src: "/etc/nginx/sites-available/{{ site_name }}"
+        dest: "/etc/nginx/sites-enabled/{{ site_name }}"
+        state: link
+      notify: reload nginx
+
+    - name: Disable default site if present
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: reload nginx
+
+    - name: Ensure nginx is running and enabled
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+  handlers:
+    - name: reload nginx
+      service:
+        name: nginx
+        state: reloaded
+
+# UNDEPLOY
+- name: Un-deploy webservers and clean resources
+  hosts: web
+  become: yes
+  tags: [undeploy]
+
+  vars:
+    site_root: /var/www/sjsu
+    site_name: sjsu
+
+  tasks:
+    - name: Remove site symlink
+      file:
+        path: "/etc/nginx/sites-enabled/{{ site_name }}"
+        state: absent
+      notify: reload nginx
+
+    - name: Remove site file
+      file:
+        path: "/etc/nginx/sites-available/{{ site_name }}"
+        state: absent
+      notify: reload nginx
+
+    - name: Remove site content directory
+      file:
+        path: "{{ site_root }}"
+        state: absent
+
+  handlers:
+    - name: reload nginx
+      service:
+        name: nginx
+        state: reloaded
+      ignore_errors: yes
