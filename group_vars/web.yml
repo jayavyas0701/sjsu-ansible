@@ -1,0 +1,4 @@
+server_port: 8080
+app_port: "{{ server_port }}"
+site_name: hello
+web_root: /var/www/hello

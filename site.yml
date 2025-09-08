@@ -29,7 +29,7 @@
 
     - name: Deploy index.html with correct SJSU-X message
       template:
-        src: templates/index.html.j2
+        src: index.html.j2
         dest: "{{ site_root }}/index.html"
         owner: www-data
         group: www-data
