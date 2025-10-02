@@ -4,18 +4,11 @@ pipeline {
   environment {
     APP_NAME = 'sjsu-ansible'
     ANSIBLE_FORCE_COLOR = '1'
-    // If you actually created a Jenkins credential with this ID, uncomment next line.
-    // API_TOKEN = credentials('example-api-token')
+    // API_TOKEN = credentials('example-api-token') // keep commented unless you created it
   }
-
   stages {
-    stage('Hello') {
-      steps { echo 'Jenkins sees this Jenkinsfile ✅' }
-    }
-
-    stage('Checkout') {
-      steps { checkout scm }
-    }
+    stage('Hello') { steps { echo 'Jenkins sees this Jenkinsfile ✅' } }
+    stage('Checkout') { steps { checkout scm } }
 
     stage('Setup (Python & Ansible)') {
       steps {
