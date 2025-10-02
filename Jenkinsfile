@@ -71,7 +71,11 @@ ansible-playbook -i inventory.ini site.yml --check --diff | tee logs/check-mode.
 
     stage('Approval to Production') {
       when { branch 'main' }
-      steps { input message: "Promote build ${env.BUILD_NUMBER} to PRODUCTION?" }
+      steps {
+        input id: 'prod-approval',
+              message: "Promote build ${env.BUILD_NUMBER} to PRODUCTION?",
+              ok: 'Deploy'
+      }
     }
 
     stage('Deploy - Production') {
@@ -81,6 +85,7 @@ ansible-playbook -i inventory.ini site.yml --check --diff | tee logs/check-mode.
         sh '. .venv/bin/activate && echo "Production deploy step completed"'
       }
     }
+
   }
 
   post {
