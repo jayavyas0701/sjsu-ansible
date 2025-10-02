@@ -65,8 +65,7 @@ ansible-playbook -i inventory.ini site.yml --check --diff | tee logs/check-mode.
       when { branch 'main' }
       steps {
         echo 'Pretend deploy to STAGING…'
-        sh """. .venv/bin/activate
-echo "Staging deploy step completed" """
+        sh '. .venv/bin/activate && echo "Staging deploy step completed"'
       }
     }
 
@@ -79,8 +78,7 @@ echo "Staging deploy step completed" """
       when { branch 'main' }
       steps {
         echo 'Pretend deploy to PRODUCTION…'
-        sh """. .venv/bin/activate
-echo "Production deploy step completed" """
+        sh '. .venv/bin/activate && echo "Production deploy step completed"'
       }
     }
   }
